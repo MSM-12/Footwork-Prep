@@ -10,14 +10,18 @@
 
   :root {
     --gold: #c8a46e;
-    --gold-dim: rgba(200, 164, 110, 0.15);
-    --gold-border: rgba(200, 164, 110, 0.25);
-    --bg: #080808;
-    --surface: #0f0f0f;
-    --surface2: #161616;
-    --text: #e2d9ce;
-    --text-dim: #8a8075;
-    --text-muted: #4a4540;
+    --gold-accent-bg: rgba(200, 164, 110, 0.06);
+    --gold-border: rgba(200, 164, 110, 0.3);
+    --bg: #FAF8F5;
+    --surface: #FFFFFF;
+    --surface2: #F4F1EC;
+    --text: #1A1A1A;
+    --text-dim: #6B6560;
+    --text-muted: #A09A93;
+    --border: #E2DED8;
+    --border-card: #E8E4DE;
+    --danger: #B85C4F;
+    --danger-bg: rgba(184, 92, 79, 0.06);
     --serif: 'Newsreader', Georgia, serif;
     --mono: 'JetBrains Mono', monospace;
   }
@@ -91,7 +95,7 @@
   .gate-input {
     width: 100%;
     background: var(--surface);
-    border: 1px solid var(--gold-border);
+    border: 1px solid var(--border-card);
     color: var(--text);
     font-family: var(--mono);
     font-size: 0.8rem;
@@ -108,8 +112,8 @@
 
   .gate-btn {
     width: 100%;
-    background: var(--gold);
-    color: #0a0808;
+    background: var(--text);
+    color: #FAF8F5;
     border: none;
     font-family: var(--mono);
     font-size: 0.7rem;
@@ -144,7 +148,7 @@
   #main.hidden { display: none; }
 
   header {
-    border-bottom: 1px solid var(--gold-border);
+    border-bottom: 1px solid var(--border);
     padding: 1.25rem 2.5rem;
     display: flex;
     align-items: center;
@@ -156,7 +160,7 @@
     font-size: 0.65rem;
     letter-spacing: 0.16em;
     text-transform: uppercase;
-    color: var(--gold);
+    color: var(--text);
   }
 
   .header-reset {
@@ -209,7 +213,7 @@
   .search-input {
     flex: 1;
     background: var(--surface);
-    border: 1px solid var(--gold-border);
+    border: 1px solid var(--border-card);
     color: var(--text);
     font-family: var(--serif);
     font-size: 1rem;
@@ -223,8 +227,8 @@
   .search-input::placeholder { color: var(--text-muted); font-style: italic; }
 
   .search-btn {
-    background: var(--gold);
-    color: #0a0808;
+    background: var(--text);
+    color: #FAF8F5;
     border: none;
     font-family: var(--mono);
     font-size: 0.65rem;
@@ -239,6 +243,34 @@
 
   .search-btn:hover { opacity: 0.85; }
   .search-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* ── CHIPS ────────────────────────────────────── */
+
+  .chips {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  .chip {
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.06em;
+    color: var(--text-dim);
+    border: 1px solid var(--border-card);
+    padding: 0.3rem 0.7rem;
+    cursor: pointer;
+    background: var(--surface);
+    transition: border-color 0.15s, color 0.15s, background 0.15s;
+    border-radius: 2px;
+  }
+
+  .chip:hover {
+    border-color: var(--gold);
+    color: var(--gold);
+    background: var(--gold-accent-bg);
+  }
 
   /* ── LOADING ───────────────────────────────────── */
 
@@ -296,9 +328,9 @@
     display: none;
     font-family: var(--mono);
     font-size: 0.75rem;
-    color: #e07070;
-    background: rgba(224, 112, 112, 0.08);
-    border: 1px solid rgba(224, 112, 112, 0.2);
+    color: var(--danger);
+    background: var(--danger-bg);
+    border: 1px solid rgba(184, 92, 79, 0.2);
     padding: 1rem;
     margin-bottom: 2rem;
     line-height: 1.6;
@@ -312,7 +344,7 @@
   #result.active { display: block; }
 
   .result-header {
-    border-bottom: 1px solid var(--gold-border);
+    border-bottom: 1px solid var(--border);
     padding-bottom: 1.5rem;
     margin-bottom: 2rem;
   }
@@ -345,8 +377,8 @@
     letter-spacing: 0.1em;
     text-transform: uppercase;
     padding: 0.25rem 0.6rem;
-    border: 1px solid var(--gold-border);
-    color: var(--text-dim);
+    border: 1px solid var(--border-card);
+    color: var(--text-muted);
   }
 
   .tag.gold {
@@ -409,7 +441,7 @@
     content: '';
     flex: 1;
     height: 1px;
-    background: var(--gold-border);
+    background: var(--border);
   }
 
   .prose {
@@ -423,9 +455,9 @@
 
   .card {
     background: var(--surface);
-    border: 1px solid rgba(255,255,255,0.04);
+    border: 1px solid var(--border-card);
     padding: 1rem 1.1rem;
-    border-left: 2px solid var(--gold-border);
+    border-left: 2px solid var(--gold);
   }
 
   .card-title {
@@ -448,15 +480,16 @@
   .pill {
     font-family: var(--mono);
     font-size: 0.72rem;
-    color: var(--text-dim);
+    color: var(--danger);
     padding: 0.6rem 0.8rem;
-    background: var(--surface);
-    border-left: 2px solid var(--gold);
+    background: var(--danger-bg);
+    border: 1px solid rgba(184, 92, 79, 0.15);
+    border-left: 2px solid var(--danger);
     line-height: 1.5;
   }
 
   .slope-box {
-    background: var(--surface);
+    background: var(--gold-accent-bg);
     border: 1px solid var(--gold-border);
     padding: 1.1rem 1.25rem;
     font-size: 0.92rem;
@@ -469,7 +502,7 @@
   /* ── FOOTER ────────────────────────────────────── */
 
   footer {
-    border-top: 1px solid rgba(255,255,255,0.04);
+    border-top: 1px solid var(--border);
     padding: 1.5rem 2.5rem;
     font-family: var(--mono);
     font-size: 0.6rem;
@@ -491,9 +524,9 @@
 <!-- GATE SCREEN -->
 <div id="gate">
   <div class="gate-inner">
-    <div class="gate-eyebrow">Footwork VC — Internal Tool</div>
+    <div class="gate-eyebrow">Footwork VC / Meeting Prep Agent</div>
     <h1 class="gate-title">Meeting Prep<br><em>Agent</em></h1>
-    <p class="gate-sub">Researches companies and founders against Footwork's thesis in real time. Enter your Anthropic API key to continue.</p>
+    <p class="gate-sub">This tool runs on Claude. Bring your API key to get started.</p>
     <label class="gate-label" for="apiKeyInput">Anthropic API Key</label>
     <input id="apiKeyInput" class="gate-input" type="password" placeholder="sk-ant-api03-..." autocomplete="off" spellcheck="false">
     <button class="gate-btn" onclick="submitKey()">Enter →</button>
@@ -504,7 +537,7 @@
 <!-- MAIN SCREEN -->
 <div id="main" class="hidden">
   <header>
-    <div class="header-brand">Footwork VC — Meeting Prep</div>
+    <div class="header-brand">Footwork VC / Meeting Prep Agent</div>
     <button class="header-reset" onclick="resetKey()">Change Key</button>
   </header>
 
@@ -515,6 +548,11 @@
       <div class="search-row">
         <input id="queryInput" class="search-input" type="text" placeholder="e.g. Rippling, Sarah Guo, Playground AI" autocomplete="off">
         <button id="submitBtn" class="search-btn" onclick="handleSubmit()">Prep Brief →</button>
+      </div>
+      <div class="chips">
+        <span class="chip" onclick="fillQuery('BreethrHQ')">BreethrHQ</span>
+        <span class="chip" onclick="fillQuery('Cavela')">Cavela</span>
+        <span class="chip" onclick="fillQuery('Kaaj')">Kaaj</span>
       </div>
     </div>
 
@@ -535,8 +573,7 @@
   </div>
 
   <footer>
-    <div>Built for <span>Footwork VC</span></div>
-    <div>M S Mihir</div>
+    <div>Custom made for <span>Footwork VC</span> by M S Mihir</div>
   </footer>
 </div>
 
@@ -624,6 +661,13 @@ RULES:
 - Conversation angles must be things Nikhil would actually want to ask — not generic.
 - Keep Human section must reflect Footwork's concern that AI makes investors generic.
 - If you cannot find the company, produce the best brief you can with available information.`;
+
+// ── CHIPS ─────────────────────────────────────
+
+function fillQuery(val) {
+  document.getElementById('queryInput').value = val;
+  document.getElementById('queryInput').focus();
+}
 
 // ── KEY GATE ──────────────────────────────────
 
