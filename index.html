@@ -741,7 +741,12 @@ async function handleSubmit() {
       }
     }
 
-    const cleaned = text.replace(/^```json\s*/i, '').replace(/```\s*$/, '').trim();
+    const cleaned = text
+      .replace(/<cite[^>]*>.*?<\/cite>/gs, '')
+      .replace(/\[\d+\]/g, '')
+      .replace(/^```json\s*/i, '')
+      .replace(/```\s*$/, '')
+      .trim();
     const brief = JSON.parse(cleaned);
 
     stopLoading();
