@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Footwork VC — Meeting Prep Agent</title>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f1114;
+    --surface: #16181d;
+    --surface-alt: #1c1f26;
+    --border: #2a2d36;
+    --accent: #c8a46e;
+    --accent-bg: rgba(200, 164, 110, 0.1);
+    --accent-border: rgba(200, 164, 110, 0.25);
+    --text-primary: #e8e4dd;
+    --text-secondary: #9a968e;
+    --text-muted: #5e5b55;
+    --danger: #c47a6e;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Newsreader', 'Georgia', serif;
+    background: var(--bg);
+    color: var(--text-primary);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .mono {
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .header {
+    border-bottom: 1px solid var(--border);
+    padding: 28px 32px 24px;
+    max-width: 720px;
+    margin: 0 auto;
+  }
+
+  .header-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+
+  .header-meta span:first-child {
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: var(--accent);
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+
+  .header-meta span:last-child {
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+  }
+
+  .header h1 {
+    font-size: 32px;
+    font-weight: 400;
+    font-style: italic;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    margin-top: 10px;
+  }
+
+  .header p {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-top: 12px;
+    line-height: 1.6;
+    max-width: 540px;
+  }
+
+  .input-area {
+    padding: 20px 32px;
+    border-bottom: 1px solid var(--border);
+    max-width: 720px;
+    margin: 0 auto;
+  }
+
+  .input-row {
+    display: flex;
+    gap: 10px;
+  }
+
+  .input-row input {
+    flex: 1;
+    padding: 13px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text-primary);
+    font-size: 15px;
+    font-family: 'Newsreader', serif;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .input-row input:focus { border-color: var(--accent); }
+  .input-row input::placeholder { color: var(--text-muted); }
+
+  .input-row button {
+    padding: 13px 28px;
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+    border-radius: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .input-row button:disabled {
+    background: var(--surface-alt);
+    color: var(--text-muted);
+    cursor: wait;
+  }
+
+  .loading-panel {
+    margin-top: 16px;
+    padding: 14px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    display: none;
+  }
+
+  .loading-panel.active { display: block; }
+
+  .loading-step {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 0;
+    opacity: 0.25;
+    transition: opacity 0.4s;
+  }
+
+  .loading-step.active { opacity: 1; }
+  .loading-step.done { opacity: 1; }
+
+  .loading-step .check {
+    width: 14px; height: 14px;
+    border-radius: 3px;
+    display: flex; align-items: center; justify-content: center;
+    border: 1px solid var(--border);
+    font-size: 9px; color: var(--accent);
+    flex-shrink: 0;
+  }
+
+  .loading-step.done .check {
+    background: var(--accent-bg);
+    border-color: var(--accent-border);
+  }
+
+  .loading-step span:last-child {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .loading-step.active span:last-child,
+  .loading-step.done span:last-child {
+    color: var(--text-secondary);
+  }
+
+  @keyframes pulse {
+    0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
+    40% { opacity: 1; transform: scale(1); }
+  }
+
+  .typing-dots {
+    display: inline-flex; gap: 3px; margin-left: 2px;
+  }
+
+  .typing-dots span {
+    width: 4px; height: 4px; border-radius: 50%;
+    background: var(--accent);
+    animation: pulse 1.2s ease-in-out infinite;
+  }
+
+  .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+  .result-area {
+    padding: 28px 32px 60px;
+    max-width: 720px;
+    margin: 0 auto;
+    display: none;
+  }
+
+  .result-area.active { display: block; }
+
+  .company-header {
+    margin-bottom: 36px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+    opacity: 0; transform: translateY(12px);
+    transition: all 0.5s ease;
+  }
+
+  .company-header.visible { opacity: 1; transform: translateY(0); }
+
+  .company-header h2 {
+    font-size: 36px;
+    font-weight: 400;
+    font-style: italic;
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+  }
+
+  .company-header .one-liner {
+    font-size: 16px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin-bottom: 14px;
+  }
+
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; }
+
+  .tag {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--surface-alt);
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+    font-weight: 500;
+  }
+
+  .tag.highlight {
+    background: var(--accent-bg);
+    color: var(--accent);
+    border-color: var(--accent-border);
+  }
+
+  .funding-note {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 10px;
+  }
+
+  .section {
+    margin-bottom: 28px;
+    opacity: 0; transform: translateY(16px);
+    transition: all 0.5s ease;
+  }
+
+  .section.visible { opacity: 1; transform: translateY(0); }
+
+  .section-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .section h3 {
+    font-size: 20px;
+    font-weight: 500;
+    line-height: 1.3;
+    margin-bottom: 12px;
+  }
+
+  .section-content {
+    color: var(--text-secondary);
+    font-size: 14.5px;
+    line-height: 1.7;
+  }
+
+  .card {
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+  }
+
+  .card-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .card-body { font-size: 14px; color: var(--text-secondary); line-height: 1.6; }
+
+  .adjacency-card {
+    display: flex; gap: 12px;
+    padding: 10px 14px;
+    margin-bottom: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+  }
+
+  .adjacency-name {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--accent);
+    font-weight: 600;
+    white-space: nowrap;
+    min-width: 90px;
+    flex-shrink: 0;
+  }
+
+  .angle-card {
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    background: var(--surface);
+    border-left: 2px solid var(--accent);
+    border-radius: 0 6px 6px 0;
+  }
+
+  .angle-title {
+    font-size: 14.5px;
+    color: var(--text-primary);
+    font-weight: 500;
+    margin-bottom: 4px;
+  }
+
+  .angle-detail { font-size: 13.5px; color: var(--text-secondary); line-height: 1.6; }
+
+  .keep-human-box {
+    padding: 14px 16px;
+    background: rgba(196, 122, 110, 0.06);
+    border: 1px solid rgba(196, 122, 110, 0.15);
+    border-radius: 6px;
+  }
+
+  .keep-human-label {
+    font-size: 12px;
+    color: var(--danger);
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 10px;
+  }
+
+  .keep-human-item {
+    display: flex; gap: 8px;
+    margin-bottom: 6px;
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+
+  .keep-human-item .dash { color: var(--danger); flex-shrink: 0; }
+
+  .slope-box {
+    padding: 12px 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+
+  .footer {
+    margin-top: 36px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    opacity: 0;
+    transition: opacity 0.6s ease 0.6s;
+  }
+
+  .footer.visible { opacity: 0.5; }
+
+  .footer span {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .empty-state {
+    padding: 80px 32px;
+    text-align: center;
+    max-width: 720px;
+    margin: 0 auto;
+  }
+
+  .empty-state p {
+    font-size: 15px;
+    color: var(--text-muted);
+    font-style: italic;
+    max-width: 400px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+
+  .empty-state .sub {
+    font-size: 13px;
+    color: var(--text-muted);
+    display: block;
+    margin-top: 16px;
+    font-style: normal;
+  }
+
+  .error-msg {
+    margin: 20px 32px;
+    padding: 14px 16px;
+    background: rgba(196, 122, 110, 0.08);
+    border: 1px solid rgba(196, 122, 110, 0.2);
+    border-radius: 6px;
+    color: var(--danger);
+    font-size: 14px;
+    max-width: 720px;
+    margin-left: auto; margin-right: auto;
+    display: none;
+  }
+
+  .error-msg.active { display: block; }
+
+  .hint {
+    font-size: 12.5px;
+    color: var(--text-muted);
+    font-style: italic;
+    margin-bottom: 12px;
+  }
+
+  .main-app { display: block; }
+
+  @media (max-width: 600px) {
+    .header, .input-area, .result-area, .empty-state { padding-left: 20px; padding-right: 20px; }
+    .header h1 { font-size: 26px; }
+    .company-header h2 { font-size: 28px; }
+    .input-row { flex-direction: column; }
+    .input-row button { width: 100%; }
+    .adjacency-card { flex-direction: column; gap: 4px; }
+    .adjacency-name { min-width: unset; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Main App -->
+<div class="main-app" id="mainApp">
+
+<div class="header">
+  <div class="header-meta">
+    <span class="mono">Footwork VC</span>
+    <span style="color: var(--text-muted); font-size: 11px;">/</span>
+    <span class="mono">Meeting Prep Agent</span>
+  </div>
+  <h1>Know the company before the call.</h1>
+  <p>Enter a company or founder name. This agent pulls live data, maps it against
+  Footwork's thesis lanes and portfolio, and generates a brief with
+  conversation angles that are specific to how Nikhil and Mike actually invest.</p>
+</div>
+
+<div class="input-area">
+  <div class="input-row">
+    <input type="text" id="queryInput" placeholder="e.g. Runway ML, or Aparna Chennapragada">
+    <button id="submitBtn" onclick="handleSubmit()">Prepare Brief</button>
+  </div>
+  <div class="loading-panel" id="loadingPanel">
+    <div class="loading-step" id="step0"><div class="check"></div><span class="mono">Pulling company data from the web...</span></div>
+    <div class="loading-step" id="step1"><div class="check"></div><span class="mono">Mapping against Footwork's thesis lanes...</span></div>
+    <div class="loading-step" id="step2"><div class="check"></div><span class="mono">Checking portfolio adjacency...</span></div>
+    <div class="loading-step" id="step3"><div class="check"></div><span class="mono">Generating conversation angles...</span></div>
+    <div class="loading-step" id="step4"><div class="check"></div><span class="mono">Drafting the brief...</span></div>
+  </div>
+</div>
+
+<div class="error-msg" id="errorMsg"></div>
+
+<div class="empty-state" id="emptyState">
+  <p>The automation that makes you sharper, not generic.
+    <span class="sub">Enter a company name above to generate a Footwork-specific meeting brief.</span>
+  </p>
+</div>
+
+<div class="result-area" id="resultArea"></div>
+
+</div><!-- end mainApp -->
+
+<script>
+const PORTFOLIO = [
+  { name: "Watershed", sector: "Climate/Enterprise", stage: "Growth", desc: "Carbon management platform for enterprises" },
+  { name: "GPTZero", sector: "AI/Education", stage: "Series A", desc: "AI detection and content authenticity" },
+  { name: "Elicit", sector: "AI/Research", stage: "Series A", desc: "AI research assistant for scientists" },
+  { name: "WindBorne", sector: "Climate/DeepTech", stage: "Series A", desc: "Weather balloon constellation for atmospheric data" },
+  { name: "Anything", sector: "AI/Developer Tools", stage: "Series A", desc: "AI-native app builder" },
+  { name: "Fuse", sector: "Fintech/AI", stage: "Series A", desc: "AI-native loan origination for credit unions" },
+  { name: "Confido", sector: "AI/CPG", stage: "Series A", desc: "AI-powered CPG platform" },
+  { name: "Cradlewise", sector: "Consumer/Family", stage: "Seed", desc: "Smart crib with AI sleep monitoring" },
+  { name: "Table22", sector: "Commerce/Restaurants", stage: "Seed", desc: "Membership platform for restaurants" },
+  { name: "Trendsi", sector: "Commerce/Fashion", stage: "Seed", desc: "Dropshipping platform for fashion sellers" },
+  { name: "Heard", sector: "Health/Fintech", stage: "Seed", desc: "Financial back-office for therapists" },
+  { name: "Felt", sector: "Consumer/Geo", stage: "Seed", desc: "Collaborative mapmaking tool" },
+  { name: "Tracksuit", sector: "Enterprise/Marketing", stage: "Series A", desc: "Brand tracking for challenger brands" },
+  { name: "Snout", sector: "Consumer/Pets", stage: "Series A", desc: "Pet care platform" },
+  { name: "Protege", sector: "Enterprise/HR", stage: "Seed", desc: "Career development platform" },
+  { name: "Honeydew", sector: "Health/Consumer", stage: "Seed", desc: "Pediatric health platform" },
+  { name: "ReflexAI", sector: "AI/Enterprise", stage: "Seed", desc: "AI training for human conversations" },
+  { name: "Benable", sector: "Consumer/Creator", stage: "Seed", desc: "Creator commerce platform" },
+  { name: "Portex", sector: "Supply Chain", stage: "Seed", desc: "Digital freight forwarding" },
+  { name: "Power", sector: "Consumer/Fitness", stage: "Seed", desc: "Fitness platform" },
+  { name: "Waldo", sector: "AI/QA", stage: "Seed", desc: "AI-powered mobile app testing" }
+];
+
+const THESIS_LANES = [
+  "Consumer ↔ Enterprise blur", "AI as product infrastructure", "Climate & sustainability",
+  "Health & wellness (post-pandemic)", "Commerce enablement & marketplaces",
+  "Vertical SaaS + fintech", "Empowering entrepreneurship", "Family & childcare", "Supply chain digitization"
+];
+
+let loadingInterval = null;
+let currentStage = 0;
+
+function startLoading() {
+  const panel = document.getElementById('loadingPanel');
+  panel.classList.add('active');
+  document.getElementById('emptyState').style.display = 'none';
+  document.getElementById('resultArea').classList.remove('active');
+  document.getElementById('errorMsg').classList.remove('active');
+  currentStage = 0;
+  updateLoadingSteps();
+
+  loadingInterval = setInterval(() => {
+    if (currentStage < 4) {
+      currentStage++;
+      updateLoadingSteps();
+    }
+  }, 3500);
+}
+
+function updateLoadingSteps() {
+  for (let i = 0; i < 5; i++) {
+    const step = document.getElementById('step' + i);
+    step.className = 'loading-step';
+    const check = step.querySelector('.check');
+    if (i < currentStage) {
+      step.classList.add('done');
+      check.innerHTML = '✓';
+    } else if (i === currentStage) {
+      step.classList.add('active');
+      check.innerHTML = '<span class="typing-dots"><span></span><span></span><span></span></span>';
+    } else {
+      check.innerHTML = '';
+    }
+  }
+}
+
+function stopLoading() {
+  clearInterval(loadingInterval);
+  document.getElementById('loadingPanel').classList.remove('active');
+}
+
+async function handleSubmit() {
+  const input = document.getElementById('queryInput');
+  const btn = document.getElementById('submitBtn');
+  const query = input.value.trim();
+  if (!query) return;
+
+  btn.disabled = true;
+  btn.textContent = 'Researching...';
+  startLoading();
+
+  const systemPrompt = `You are a meeting prep research agent for Footwork VC, a $400M early-stage venture firm (Fund I: $175M, Fund II: $225M) led by Nikhil Basu Trivedi and Mike Smith. Footwork leads Seed and Series A rounds in consumer tech and consumerization of enterprise tech. They are thesis-driven, going deep in "swim lanes."
+
+FOOTWORK PORTFOLIO (24 companies):
+${PORTFOLIO.map(p => `- ${p.name}: ${p.desc} (${p.sector}, ${p.stage})`).join("\n")}
+
+THESIS SWIM LANES: ${THESIS_LANES.join(", ")}
+
+FOUNDER EVALUATION: Footwork's #1 quality is "slope of learning" — how fast a founder learns and adapts. They also look for hunger, humility, interdisciplinary thinking, and early PMF signals.
+
+KEY CONTEXT:
+- 5-person team (2 GPs + 3 ops). Very small, high-conviction.
+- Nikhil writes "next big thing" Substack (18K+ subs) — thesis-in-public approach
+- Mike was President/COO of Stitch Fix (idea to IPO), COO of Walmart.com
+- They invest at intersections of categories. Many companies are both consumer AND enterprise.
+- They care deeply about preserving human judgment while leveraging AI
+
+Given a company or founder name, produce a structured meeting prep brief. Search the web to find current information. Your response MUST be valid JSON with this exact structure:
+{
+  "company_name": "string",
+  "one_liner": "What they do in one sentence",
+  "stage": "Pre-seed/Seed/Series A/Series B/etc",
+  "funding": "Known funding details or 'Not publicly disclosed'",
+  "sector_tags": ["array", "of", "sector", "tags"],
+  "founder_names": "Founder name(s)",
+  "founder_background": "2-3 sentences on founder background, experience, previous companies",
+  "thesis_alignment": [
+    {"lane": "Which Footwork swim lane", "reasoning": "Why this maps to that lane - be specific"}
+  ],
+  "portfolio_adjacency": [
+    {"company": "Footwork portfolio company name", "connection": "How they're adjacent"}
+  ],
+  "conversation_angles": [
+    {"angle": "Short title", "detail": "Specific, thesis-grounded question or discussion point. NOT generic. Reference Footwork's actual thesis or Nikhil's writing."}
+  ],
+  "keep_human": [
+    "Thing in this meeting that should NOT be delegated to AI — requires human judgment, relationship, or intuition"
+  ],
+  "slope_of_learning_signals": "What to watch for re: founder's learning velocity in this meeting"
+}
+
+CRITICAL RULES:
+- Be SPECIFIC. Reference actual Footwork portfolio companies, actual thesis lanes, actual Nikhil/Mike context.
+- Conversation angles should be things Nikhil would ACTUALLY want to explore — not generic VC questions.
+- Keep Human section should reflect Footwork's concern about AI making investors generic.
+- If you can't find the company, still produce the best brief you can with available information.
+- Return ONLY valid JSON. No markdown, no backticks, no explanation.`;
+
+  try {
+    const response = await fetch("/.netlify/functions/research", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 4000,
+        system: systemPrompt,
+        tools: [{ type: "web_search_20250305", name: "web_search" }],
+        messages: [{ role: "user", content: `Research and create a Footwork VC meeting prep brief for: ${query}` }],
+      }),
+    });
+
+    const data = await response.json();
+    let textContent = "";
+    if (data.content) {
+      for (const block of data.content) {
+        if (block.type === "text") textContent += block.text;
+      }
+    }
+
+    const cleaned = textContent.replace(/```json|```/g, "").trim();
+    const result = JSON.parse(cleaned);
+    stopLoading();
+    renderResult(result);
+  } catch (err) {
+    console.error("Error:", err);
+    stopLoading();
+    const errorEl = document.getElementById('errorMsg');
+    errorEl.textContent = 'Something went wrong generating the brief. Check console for details and try again.';
+    errorEl.classList.add('active');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Prepare Brief';
+  }
+}
+
+function renderResult(r) {
+  const area = document.getElementById('resultArea');
+  const today = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+  let tagsHTML = (r.sector_tags || []).map(t => `<span class="tag">${t}</span>`).join('');
+  tagsHTML += `<span class="tag highlight">${r.stage}</span>`;
+
+  let thesisHTML = (r.thesis_alignment || []).map(ta => `
+    <div class="card">
+      <div class="card-label">${ta.lane}</div>
+      <div class="card-body">${ta.reasoning}</div>
+    </div>
+  `).join('');
+
+  let adjacencyHTML = (r.portfolio_adjacency || []).map(pa => `
+    <div class="adjacency-card">
+      <span class="adjacency-name">${pa.company}</span>
+      <span class="card-body">${pa.connection}</span>
+    </div>
+  `).join('');
+
+  let anglesHTML = (r.conversation_angles || []).map(ca => `
+    <div class="angle-card">
+      <div class="angle-title">${ca.angle}</div>
+      <div class="angle-detail">${ca.detail}</div>
+    </div>
+  `).join('');
+
+  let keepHumanHTML = (r.keep_human || []).map(item => `
+    <div class="keep-human-item">
+      <span class="dash">—</span>
+      <span>${item}</span>
+    </div>
+  `).join('');
+
+  area.innerHTML = `
+    <div class="company-header" id="companyHeader">
+      <h2>${r.company_name}</h2>
+      <div class="one-liner">${r.one_liner}</div>
+      <div class="tags">${tagsHTML}</div>
+      ${r.funding && r.funding !== 'Not publicly disclosed' ? `<div class="funding-note">Funding: ${r.funding}</div>` : ''}
+    </div>
+
+    <div class="section" style="transition-delay: 0.08s;">
+      <div class="section-label">01 — People</div>
+      <h3>Founder Background</h3>
+      <div class="section-content">
+        <strong style="color: var(--text-primary); font-weight: 500;">${r.founder_names}</strong>
+        <p style="margin-top: 6px;">${r.founder_background}</p>
+      </div>
+    </div>
+
+    <div class="section" style="transition-delay: 0.16s;">
+      <div class="section-label">02 — Fit</div>
+      <h3>Footwork Thesis Alignment</h3>
+      <div class="section-content">${thesisHTML}</div>
+    </div>
+
+    <div class="section" style="transition-delay: 0.24s;">
+      <div class="section-label">03 — Network</div>
+      <h3>Portfolio Adjacency</h3>
+      <div class="section-content">${adjacencyHTML}</div>
+    </div>
+
+    <div class="section" style="transition-delay: 0.32s;">
+      <div class="section-label">04 — The Meeting</div>
+      <h3>Conversation Angles</h3>
+      <div class="section-content">
+        <p class="hint">Thesis-grounded questions, not generic VC fare.</p>
+        ${anglesHTML}
+      </div>
+    </div>
+
+    <div class="section" style="transition-delay: 0.4s;">
+      <div class="section-label">05 — Evaluation</div>
+      <h3>Slope of Learning Signals</h3>
+      <div class="section-content">
+        <div class="slope-box">${r.slope_of_learning_signals}</div>
+      </div>
+    </div>
+
+    <div class="section" style="transition-delay: 0.48s;">
+      <div class="section-label">06 — Protect</div>
+      <h3>Keep Human</h3>
+      <div class="section-content">
+        <div class="keep-human-box">
+          <div class="keep-human-label">Don't delegate these to AI</div>
+          ${keepHumanHTML}
+        </div>
+      </div>
+    </div>
+
+    <div class="footer" id="resultFooter">
+      <span>Built for Footwork VC — M S Mihir</span>
+      <span>${today}</span>
+    </div>
+  `;
+
+  area.classList.add('active');
+
+  // Trigger animations
+  requestAnimationFrame(() => {
+    document.getElementById('companyHeader').classList.add('visible');
+    area.querySelectorAll('.section').forEach((s, i) => {
+      setTimeout(() => s.classList.add('visible'), 100 + i * 80);
+    });
+    setTimeout(() => document.getElementById('resultFooter').classList.add('visible'), 600);
+  });
+}
+
+// Enter key support
+document.getElementById('queryInput').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' && !document.getElementById('submitBtn').disabled) handleSubmit();
+});
+</script>
+
+</body>
+</html>
