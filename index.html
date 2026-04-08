@@ -781,15 +781,12 @@ async function handleSubmit() {
       }
     }
 
-    const joined = text.trimStart().startsWith('{') ? text : '{' + text;
-    const raw = joined
+    const cleaned = text
       .replace(/<cite[^>]*>.*?<\/cite>/gs, '')
-      .replace(/\[\d+\]/g, '')
-      .replace(/^```json\s*/i, '')
-      .replace(/```[\s\S]*$/, '')
-      .trim();
-    const cleaned = raw.slice(raw.indexOf('{'), raw.lastIndexOf('}') + 1);
-    const brief = JSON.parse(cleaned);
+      .replace(/\[\d+\]/g, '');
+    const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error('No JSON found in response');
+    const brief = JSON.parse(jsonMatch[0]);
 
     stopLoading();
     renderBrief(brief);
