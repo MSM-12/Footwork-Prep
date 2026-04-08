@@ -462,7 +462,6 @@
 </head>
 <body>
 
-<!-- Main App -->
 <div class="main-app" id="mainApp">
 
 <div class="header">
@@ -634,9 +633,11 @@ CRITICAL RULES:
 - Return ONLY valid JSON. No markdown, no backticks, no explanation.`;
 
   try {
-    const response = await fetch("/.netlify/functions/research", {
+    const response = await fetch("/api/research", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({
         model: "claude-sonnet-4-20250514",
         max_tokens: 4000,
