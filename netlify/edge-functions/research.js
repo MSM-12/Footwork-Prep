@@ -33,8 +33,7 @@ export default async function handler(request, context) {
       body,
     });
 
-    const data = await response.text();
-    return new Response(data, {
+    return new Response(response.body, {
       status: response.status,
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });
