@@ -1,2 +1,6 @@
 [build]
   publish = "."
+
+[[edge_functions]]
+  path = "/api/research"
+  function = "research"
