@@ -781,13 +781,14 @@ async function handleSubmit() {
       }
     }
 
-    const raw = ('{' + text)
+    const joined = text.trimStart().startsWith('{') ? text : '{' + text;
+    const raw = joined
       .replace(/<cite[^>]*>.*?<\/cite>/gs, '')
       .replace(/\[\d+\]/g, '')
       .replace(/^```json\s*/i, '')
       .replace(/```[\s\S]*$/, '')
       .trim();
-    const cleaned = raw.slice(0, raw.lastIndexOf('}') + 1);
+    const cleaned = raw.slice(raw.indexOf('{'), raw.lastIndexOf('}') + 1);
     const brief = JSON.parse(cleaned);
 
     stopLoading();
