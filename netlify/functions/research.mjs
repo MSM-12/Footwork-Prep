@@ -1,12 +1,11 @@
-// netlify/functions/research.js
-// Proxies requests to Claude API so the API key stays server-side
+// netlify/functions/research.mjs
 
 export default async (req) => {
   if (req.method !== "POST") {
     return new Response("Method not allowed", { status: 405 });
   }
 
-  const ANTHROPIC_API_KEY = Netlify.env.get("ANTHROPIC_API_KEY");
+  const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 
   if (!ANTHROPIC_API_KEY) {
     return new Response(JSON.stringify({ error: "API key not configured" }), {
@@ -35,9 +34,13 @@ export default async (req) => {
       headers: { "Content-Type": "application/json" },
     });
   } catch (err) {
-    return new Response(JSON.stringify({ error: "Failed to reach Claude API" }), {
+    return new Response(JSON.stringify({ error: "Failed to reach Claude API", detail: err.message }), {
       status: 502,
       headers: { "Content-Type": "application/json" },
     });
   }
+};
+
+export const config = {
+  path: "/.netlify/functions/research",
 };
